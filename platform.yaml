@@ -1,0 +1,78 @@
+# Essential namespaces
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: predictor
+  labels:
+    app: satellite-ground-station
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: recordings
+  labels:
+    app: satellite-ground-station
+---
+# Storage for recordings
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: recordings-pvc
+  namespace: recordings
+spec:
+  accessModes:
+  - ReadWriteMany
+  resources:
+    requests:
+      storage: 100Gi
+  storageClassName: fast-ssd
+---
+# Satellite configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sat-cluster-config
+  namespace: predictor
+data:
+  config.yml: |
+    satellites:
+      - id: 25338
+        name: "NOAA-15"
+        frequency: 137.6200
+      - id: 33591
+        name: "NOAA-19"
+        frequency: 137.1000
+      - id: 40069
+        name: "METEOR-M2"
+        frequency: 137.1000
+      - id: 44387
+        name: "METEOR-M2-2"
+        frequency: 137.9000
+      - id: 43013
+        name: "NOAA-20"
+        frequency: 137.350
+      - id: 43226
+        name: "NOAA-21"
+        frequency: 137.350
+
+    ground_stations:
+      - name: "Primary Station"
+        location: "Home Base"
+        latitude: 45.764
+        longitude: 4.836
+        altitude: 200
+        minimum_elevation: 10.0
+        timezone: "Europe/Paris"
+        equipment:
+          receiver: "RTL-SDR v3"
+        satellites:
+          - 25338  # NOAA-15
+          - 33591  # NOAA-19
+          - 40069  # METEOR-M2
+          - 44387  # METEOR-M2-2
+          - 43013  # NOAA-20
+          - 43226  # NOAA-21
+
+    prediction:
+      prediction_days: 3
+      prediction_interval_hours: 6
