@@ -8,8 +8,8 @@ metadata:
     app: satellite-ground-station
     component: predictor
 spec:
-  schedule: "0 6 * * *"  # Daily at 6 AM
-  timeZone: "Europe/Paris"
+  schedule: "0 5 * * *" # Daily at 5 AM (before dawn passes)
+  timeZone: "Europe/Brussels"
   jobTemplate:
     spec:
       template:
@@ -19,30 +19,30 @@ spec:
         spec:
           serviceAccountName: predictor-sa
           containers:
-          - name: predictor
-            image: predictor:latest
-            imagePullPolicy: Always
-            env:
-            - name: CONFIG_PATH
-              value: "/config/config.yml"
-            volumeMounts:
-            - name: config-volume
-              mountPath: /config
-              readOnly: true
-            resources:
-              requests:
-                memory: "256Mi"
-                cpu: "200m"
-              limits:
-                memory: "512Mi"
-                cpu: "500m"
+            - name: predictor
+              image: henriinc/predictor:latest
+              imagePullPolicy: Always
+              env:
+                - name: CONFIG_PATH
+                  value: "/config/config.yml"
+              volumeMounts:
+                - name: config-volume
+                  mountPath: /config
+                  readOnly: true
+              resources:
+                requests:
+                  memory: "256Mi"
+                  cpu: "200m"
+                limits:
+                  memory: "512Mi"
+                  cpu: "500m"
           volumes:
-          - name: config-volume
-            configMap:
-              name: sat-cluster-config
+            - name: config-volume
+              configMap:
+                name: sat-cluster-config
           restartPolicy: OnFailure
       backoffLimit: 2
-      ttlSecondsAfterFinished: 86400  # Clean up after 24 hours
+      ttlSecondsAfterFinished: 86400 # Clean up after 24 hours
 ---
 # Service account for creating jobs
 apiVersion: v1
@@ -57,12 +57,12 @@ kind: ClusterRole
 metadata:
   name: job-creator
 rules:
-- apiGroups: ["batch"]
-  resources: ["jobs"]
-  verbs: ["create", "get", "list", "watch", "delete"]
-- apiGroups: [""]
-  resources: ["pods"]
-  verbs: ["get", "list", "watch"]
+  - apiGroups: ["batch"]
+    resources: ["jobs"]
+    verbs: ["create", "get", "list", "watch", "delete"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -73,6 +73,6 @@ roleRef:
   kind: ClusterRole
   name: job-creator
 subjects:
-- kind: ServiceAccount
-  name: predictor-sa
-  namespace: predictor
+  - kind: ServiceAccount
+    name: predictor-sa
+    namespace: predictor

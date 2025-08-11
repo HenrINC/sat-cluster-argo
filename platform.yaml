@@ -21,11 +21,11 @@ metadata:
   namespace: recordings
 spec:
   accessModes:
-  - ReadWriteMany
+    - ReadWriteMany
   resources:
     requests:
       storage: 100Gi
-  storageClassName: fast-ssd
+  storageClassName: local-path
 ---
 # Satellite configuration
 apiVersion: v1
