@@ -13,6 +13,29 @@ metadata:
   labels:
     app: satellite-ground-station
 ---
+# Local storage volume for recordings on NVMe
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: recordings-pv
+spec:
+  capacity:
+    storage: 100Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-nvme
+  local:
+    path: /mnt/nvme/recordings
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - rock-5b
+---
 # Storage for recordings
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -25,7 +48,7 @@ spec:
   resources:
     requests:
       storage: 100Gi
-  storageClassName: standard
+  storageClassName: local-nvme
 ---
 # Satellite configuration
 apiVersion: v1
